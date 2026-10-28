@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>제주 특산물 이야기</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --orange: #f97316;
+      --deep: #c2410c;
+      --sea: #0e7490;
+      --cream: #fff7ed;
+      --ink: #1f2937;
+    }
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      color: var(--ink);
+      background: var(--cream);
+      line-height: 1.6;
+    }
+    img { max-width: 100%; }
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: clamp(0.5rem, 2.5vw, 1.5rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      padding: clamp(0.5rem, 2vw, 1rem);
+    }
+
+    /* ---------- 첫 번째 카드: 제주 특산물 (header/nav/section/article/aside/footer) ---------- */
+    .layout {
+      display: grid;
+      gap: clamp(0.5rem, 1.5vw, 1rem);
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      grid-template-areas:
+        "header  header"
+        "photos  photos"
+        "nav     nav"
+        "section aside"
+        "article aside"
+        "footer  footer";
+    }
+    .layout > header  { grid-area: header; }
+    .layout > .photos { grid-area: photos; }
+    .layout > nav     { grid-area: nav; }
+    .layout > section { grid-area: section; }
+    .layout > article { grid-area: article; }
+    .layout > aside   { grid-area: aside; }
+    .layout > footer  { grid-area: footer; }
+
+    .layout > header, .layout > nav, .layout > section,
+    .layout > article, .layout > aside, .layout > footer {
+      background: var(--cream);
+      border-radius: 14px;
+      padding: clamp(1rem, 2.5vw, 1.5rem);
+    }
+    .layout > header {
+      background: linear-gradient(135deg, var(--orange), #fb923c);
+      color: #fff;
+      text-align: center;
+      padding: clamp(1.25rem, 4vw, 2.25rem) 1rem;
+    }
+    .layout > header h1 { margin: 0; font-size: clamp(1.4rem, 5vw, 2.2rem); line-height: 1.25; }
+    .layout > header p { margin: 0.5rem 0 0; opacity: 0.95; font-size: clamp(0.85rem, 2.4vw, 1rem); }
+
+    /* 큰 원형 버튼: reactive.html 로 이동 */
+    .launch {
+      width: clamp(96px, 22vw, 140px);
+      aspect-ratio: 1;
+      margin: 1rem auto 0;
+      border-radius: 50%;
+      background: #fff;
+      color: var(--deep);
+      text-decoration: none;
+      font-weight: bold;
+      font-size: clamp(0.85rem, 2.4vw, 1.05rem);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .launch:hover { transform: scale(1.06); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3); }
+    .launch:active { transform: scale(0.97); }
+    .launch-icon { font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1; }
+
+    .layout > nav { padding: 0.5rem; }
+    .layout > nav ul {
+      list-style: none; margin: 0; padding: 0;
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 0.25rem;
+    }
+    .layout > nav a {
+      display: block; padding: 0.5rem 1rem; border-radius: 999px;
+      color: var(--deep); text-decoration: none; font-weight: bold;
+    }
+    .layout > nav a:hover { background: #fff; }
+
+    h2 { margin: 0 0 0.75rem; color: var(--deep); font-size: clamp(1.1rem, 3vw, 1.3rem); }
+    h3 { margin: 0 0 0.25rem; font-size: 1.05rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr));
+      gap: 0.75rem;
+    }
+    .item { background: #fff; border-radius: 12px; padding: 1rem; text-align: center; }
+    .item .emoji { font-size: 2.2rem; }
+    .item p { margin: 0.25rem 0 0; font-size: 0.85rem; color: #4b5563; }
+
+    .layout > article p { margin: 0.5rem 0; }
+    .quote {
+      border-left: 4px solid var(--orange);
+      background: #fff;
+      padding: 0.5rem 1rem;
+      margin: 1rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .layout > aside h2 { color: var(--sea); }
+    .layout > aside table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .layout > aside th, .layout > aside td { text-align: left; padding: 0.4rem 0.25rem; border-bottom: 1px solid #e5e7eb; }
+    .layout > aside ul { padding-left: 1.2rem; margin: 0.5rem 0 0; font-size: 0.9rem; }
+
+    .layout > footer { text-align: center; font-size: 0.85rem; color: #6b7280; }
+
+    /* ---------- 제목 아래: Pixabay 이미지 슬라이드 ---------- */
+    .layout > .photos { background: var(--cream); border-radius: 14px; padding: 1rem 1.25rem; }
+    .photos form { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .photos form input[hidden] { display: none; }
+    #localKey { flex: 1 1 100%; }
+    #query { flex: 1 1 180px; }
+    .photos input {
+      flex: 1; min-width: 0; padding: 0.6rem 0.9rem; font-size: 1rem;
+      border: 1px solid #fed7aa; border-radius: 999px; background: #fff; outline: none;
+    }
+    .photos input:focus { border-color: var(--orange); }
+    .photos form button {
+      padding: 0.6rem 1.3rem; font-size: 1rem; border: 0; border-radius: 999px;
+      background: var(--orange); color: #fff; cursor: pointer;
+    }
+    .photos form button:hover { background: var(--deep); }
+    #status { margin: 0 0 0.5rem 0.25rem; color: #6b7280; font-size: 0.85rem; min-height: 1.3em; }
+    .slider { display: flex; align-items: center; gap: 0.5rem; }
+    .slider button {
+      flex: none; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%;
+      background: #fff; color: var(--deep); font-size: 1rem; cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    }
+    .slider button:hover:not(:disabled) { background: var(--orange); color: #fff; }
+    .slider button:disabled { opacity: 0.35; cursor: default; }
+    #frame {
+      flex: 1;
+      display: block;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #fde7d0;
+      position: relative;
+    }
+    #frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #frame .empty {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      color: #9a6b4b; font-size: 0.9rem;
+    }
+    #dots { display: flex; justify-content: center; gap: 0.35rem; margin-top: 0.6rem; min-height: 0.6rem; }
+    #dots span { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #fdba74; opacity: 0.5; }
+    #dots span.on { background: var(--orange); opacity: 1; }
+
+    /* ---------- 채팅 에이전트 버튼 + 패널 ---------- */
+    #chatBtn {
+      position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 10;
+      padding: 0.85rem 1.3rem; border: 0; border-radius: 999px;
+      background: var(--orange); color: #fff; font-size: 1rem; font-weight: bold;
+      cursor: pointer; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+    #chatBtn:hover { background: var(--deep); }
+    #chatPanel {
+      position: fixed; right: 1.25rem; bottom: 5rem; z-index: 10;
+      width: 380px; max-width: calc(100vw - 2.5rem);
+      height: 560px; max-height: calc(100vh - 7rem);
+      max-height: calc(100dvh - 7rem);
+      border-radius: 16px; overflow: hidden; background: #fff;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      display: none;
+    }
+    #chatPanel.open { display: block; }
+    #chatPanel iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+    /* ---------- 반응형 ---------- */
+    /* 태블릿·모바일: 한 줄로 쌓기 */
+    @media (max-width: 640px) {
+      .layout {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "header"
+          "photos"
+          "nav"
+          "section"
+          "article"
+          "aside"
+          "footer";
+      }
+      .layout > nav a { padding: 0.45rem 0.8rem; font-size: 0.9rem; }
+      .layout > .photos { padding: 0.75rem; }
+      .slider { gap: 0.3rem; }
+      .slider button { width: 2.1rem; height: 2.1rem; }
+    }
+
+    /* 작은 모바일 */
+    @media (max-width: 480px) {
+      body { font-size: 15px; }
+      .photos form button { padding: 0.6rem 1rem; }
+      #frame { aspect-ratio: 4 / 3; }
+      /* 채팅은 화면 아래쪽을 거의 다 쓰는 시트 형태 */
+      #chatPanel {
+        left: 0.5rem; right: 0.5rem; bottom: 4.5rem;
+        width: auto; max-width: none; height: auto;
+        top: 0.5rem; max-height: none;
+      }
+      #chatBtn { right: 0.75rem; bottom: 0.75rem; padding: 0.75rem 1.1rem; }
+    }
+
+    /* 중간 폭(태블릿·좁은 PC 창): 2열을 유지하되 간격과 글자를 줄임 */
+    @media (min-width: 641px) and (max-width: 900px) {
+      .layout { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+      .layout > section, .layout > article, .layout > aside { padding: 1rem; }
+      .layout > aside table, .layout > aside ul { font-size: 0.85rem; }
+    }
+
+    /* 터치 기기(손가락)에서는 누르기 쉽게 버튼을 키움 */
+    @media (pointer: coarse) {
+      .layout > nav a { padding: 0.65rem 1rem; }
+      .slider button { width: 2.75rem; height: 2.75rem; }
+      #chatBtn { padding: 0.95rem 1.4rem; }
+    }
+
+    /* 넓은 PC 화면 */
+    @media (min-width: 1200px) {
+      .layout { grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); }
+      #frame { aspect-ratio: 21 / 9; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- 첫 번째 카드 -->
+    <div class="card">
+      <div class="layout">
+        <header>
+          <h1>🍊 제주 특산물 이야기 🌴</h1>
+          <p>바람과 바다, 화산섬이 키운 제주의 맛을 만나보세요</p>
+          <a class="launch" href="reactive.html" aria-label="카테고리 메뉴 열기">
+            <span class="launch-icon">🧭</span>
+            <span>카테고리</span>
+          </a>
+        </header>
+
+        <div class="photos" id="photos">
+          <form id="form">
+            <input id="localKey" type="password" placeholder="Pixabay API 키 (파일로 열었을 때만)" autocomplete="off" hidden>
+            <input id="query" type="text" placeholder="🔍 이미지 검색 (예: 제주감귤, 한라봉)" required>
+            <button type="submit">검색</button>
+          </form>
+          <div id="status"></div>
+          <div class="slider">
+            <button id="prev" disabled aria-label="이전 이미지">◀</button>
+            <a id="frame" target="_blank" rel="noopener"><div class="empty">검색어를 입력하면 이미지가 0.5초마다 넘어갑니다</div></a>
+            <button id="next" disabled aria-label="다음 이미지">▶</button>
+          </div>
+          <div id="dots"></div>
+        </div>
+
+        <nav>
+          <ul>
+            <li><a href="#specialty">🍊 대표 특산물</a></li>
+            <li><a href="#story">📖 감귤 이야기</a></li>
+            <li><a href="#season">📅 출하 시기</a></li>
+            <li><a href="#photos">🖼️ 이미지 슬라이드</a></li>
+          </ul>
+        </nav>
+
+        <section id="specialty">
+          <h2>🍊 대표 특산물</h2>
+          <div class="grid">
+            <div class="item"><div class="emoji">🍊</div><h3>감귤</h3><p>새콤달콤 제주의 상징</p></div>
+            <div class="item"><div class="emoji">🍋</div><h3>한라봉</h3><p>향긋하고 과즙 가득</p></div>
+            <div class="item"><div class="emoji">🐖</div><h3>흑돼지</h3><p>쫄깃하고 고소한 맛</p></div>
+            <div class="item"><div class="emoji">🐟</div><h3>은갈치</h3><p>부드럽고 달콤한 살</p></div>
+            <div class="item"><div class="emoji">🐠</div><h3>옥돔</h3><p>담백한 제주 생선</p></div>
+            <div class="item"><div class="emoji">🍡</div><h3>오메기떡</h3><p>차조로 만든 전통 떡</p></div>
+            <div class="item"><div class="emoji">🥕</div><h3>구좌 당근</h3><p>단맛이 진한 당근</p></div>
+            <div class="item"><div class="emoji">🍵</div><h3>제주 녹차</h3><p>청정 자연의 향</p></div>
+          </div>
+        </section>
+
+        <article id="story">
+          <h2>📖 감귤 이야기</h2>
+          <p>제주 감귤은 따뜻한 기후와 화산 토양, 바다에서 불어오는 바람 속에서 자랍니다. 그래서 단맛과 신맛이 조화로운 깊은 맛을 냅니다.</p>
+          <div class="quote">🍊 겨울 제주의 귤밭은 온통 주황빛으로 물듭니다.</div>
+          <p>노지 감귤은 가을 끝자락부터 겨울까지 수확하고, 한라봉·천혜향·레드향 같은 만감류는 겨울에서 봄 사이에 맛볼 수 있습니다.</p>
+          <p>비타민 C가 풍부해 간식으로도, 주스나 초콜릿 같은 가공품으로도 사랑받는 제주의 대표 먹거리입니다.</p>
+        </article>
+
+        <aside>
+          <h2 id="season">📅 출하 시기</h2>
+          <table>
+            <tr><th>특산물</th><th>제철</th></tr>
+            <tr><td>🍊 노지 감귤</td><td>10월~1월</td></tr>
+            <tr><td>🍋 한라봉</td><td>12월~3월</td></tr>
+            <tr><td>🥕 구좌 당근</td><td>겨울</td></tr>
+            <tr><td>🐟 갈치</td><td>여름~가을</td></tr>
+            <tr><td>🐖 흑돼지</td><td>연중</td></tr>
+          </table>
+          <h2 style="margin-top:1.25rem">🎁 선물 팁</h2>
+          <ul>
+            <li>감귤 초콜릿, 오메기떡은 가볍게 선물하기 좋아요.</li>
+            <li>과일은 제철에 맞춰 주문하세요.</li>
+            <li>신선식품은 냉장 배송 여부를 확인하세요.</li>
+          </ul>
+        </aside>
+
+        <footer>
+          🌺 제철과 가격은 해마다 달라질 수 있으니 판매처에서 확인해 주세요.
+        </footer>
+      </div>
+    </div>
+
+  </div>
+
+  <button id="chatBtn" type="button" aria-expanded="false" aria-controls="chatPanel">💬 에이전트와 채팅</button>
+  <div id="chatPanel"></div>
+
+  <script>
+    (function () {
+      const btn = document.getElementById('chatBtn');
+      const panel = document.getElementById('chatPanel');
+      btn.addEventListener('click', () => {
+        const open = panel.classList.toggle('open');
+        btn.setAttribute('aria-expanded', open);
+        btn.textContent = open ? '✖ 채팅 닫기' : '💬 에이전트와 채팅';
+        if (open && !panel.firstChild) {
+          const frame = document.createElement('iframe');
+          frame.src = 'jeju-agent/agent.html';
+          frame.title = '제주 특산물 에이전트 채팅';
+          panel.append(frame);
+        }
+      });
+    })();
+  </script>
+
+  <script>
+    const LOCAL_MODE = location.protocol === 'file:';
+    const INTERVAL_MS = 500;
+    const $ = (id) => document.getElementById(id);
+    let query = '', hits = [], index = 0, timer = null, searchId = 0;
+
+    function stop() { clearInterval(timer); timer = null; }
+
+    function start() {
+      stop();
+      timer = setInterval(() => show(index + 1), INTERVAL_MS);
+    }
+
+    function show(i) {
+      index = (i + hits.length) % hits.length;
+      const h = hits[index];
+      const frame = $('frame');
+      frame.href = h.pageURL;
+      const img = document.createElement('img');
+      img.src = h.webformatURL;
+      img.alt = h.tags;
+      frame.replaceChildren(img);
+      $('status').textContent = `"${query}" · ${index + 1} / ${hits.length}`;
+      [...$('dots').children].forEach((d, n) => d.classList.toggle('on', n === index));
+    }
+
+    function preload(list) {
+      return Promise.all(list.map((h) => new Promise((resolve) => {
+        const img = new Image();
+        img.onload = img.onerror = resolve;
+        img.src = h.webformatURL;
+      })));
+    }
+
+    async function search() {
+      const id = ++searchId;
+      stop();
+      $('status').textContent = '불러오는 중…';
+      $('prev').disabled = $('next').disabled = true;
+      try {
+        // 서버(Vercel)에서는 /api/pixabay 로, 파일(file://)로 열었을 때는 입력한 키로 Pixabay 에 직접 요청
+        const res = await fetch(LOCAL_MODE
+          ? 'https://pixabay.com/api/?' + new URLSearchParams({
+              key: $('localKey').value.trim(), q: query, image_type: 'photo', per_page: 10, page: 1,
+            })
+          : '/api/pixabay?' + new URLSearchParams({ q: query, page: 1 }));
+        const raw = await res.text();
+        let data = {};
+        try { data = JSON.parse(raw); } catch (_) {}
+        if (!res.ok) {
+          throw new Error(data.error || (LOCAL_MODE && res.status === 400 ? 'API 키를 확인해 주세요.' : '요청 실패 (' + res.status + ')'));
+        }
+        if (id !== searchId) return;
+        if (!data.hits.length) {
+          hits = [];
+          $('frame').replaceChildren(Object.assign(document.createElement('div'), { className: 'empty', textContent: '검색 결과가 없습니다.' }));
+          $('dots').replaceChildren();
+          $('status').textContent = '';
+          return;
+        }
+        await preload(data.hits);
+        if (id !== searchId) return;
+        hits = data.hits;
+        $('dots').replaceChildren(...hits.map(() => document.createElement('span')));
+        $('prev').disabled = $('next').disabled = false;
+        show(0);
+        start();
+      } catch (e) {
+        $('status').textContent = '⚠️ ' + e.message;
+      }
+    }
+
+    if (LOCAL_MODE) { $('localKey').hidden = false; $('localKey').required = true; }
+
+    $('form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      query = $('query').value.trim();
+      if (query) search();
+    });
+    $('prev').addEventListener('click', () => { show(index - 1); start(); });
+    $('next').addEventListener('click', () => { show(index + 1); start(); });
+  </script>
+</body>
+</html>

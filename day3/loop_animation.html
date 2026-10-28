@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>for...of 반복문 애니메이션</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 16px; background: #f6f7f9; color: #222; }
+        h1 { font-size: 20px; margin: 0 0 12px; }
+        .row { display: flex; gap: 16px; flex-wrap: wrap; }
+        .card { background: #fff; border-radius: 10px; padding: 12px 14px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+        #code { flex: 1 1 320px; font-family: Consolas, monospace; font-size: 15px; }
+        .line { padding: 3px 8px; border-radius: 5px; white-space: pre; transition: background .3s; }
+        .line.on { background: #ffe58a; font-weight: bold; }
+        #view { flex: 1 1 360px; }
+        .label { font-size: 13px; color: #666; margin: 10px 0 4px; }
+        #arr { display: flex; gap: 10px; }
+        .box { width: 64px; height: 64px; border: 2px solid #aab; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+               font-size: 22px; background: #fff; transition: all .4s; }
+        .box.cur { border-color: #e67e00; background: #fff3d6; transform: translateY(-8px) scale(1.1); }
+        .box.done { background: #e4f6e4; border-color: #6cbf6c; color: #6a6; }
+        #machine { display: flex; align-items: center; gap: 10px; font-size: 20px; min-height: 52px; }
+        .pill { padding: 8px 14px; border-radius: 20px; background: #eef; border: 2px solid #99c; min-width: 40px; text-align: center; }
+        .pill.pop { animation: pop .5s; }
+        @keyframes pop { 0% { transform: scale(.4); opacity: 0 } 70% { transform: scale(1.2) } 100% { transform: scale(1); opacity: 1 } }
+        #sum { font-size: 34px; font-weight: bold; color: #1a6fd8; transition: transform .3s; display: inline-block; }
+        #sum.pop { transform: scale(1.4); }
+        #msg { margin-top: 12px; padding: 10px 12px; background: #eaf3ff; border-radius: 8px; min-height: 42px; font-size: 15px; line-height: 1.5; }
+        #console { background: #1e1e1e; color: #9be39b; font-family: Consolas, monospace; padding: 10px; border-radius: 8px; min-height: 80px; font-size: 14px; }
+        #ctrl { margin-top: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        button { font-size: 15px; padding: 6px 14px; border-radius: 6px; border: 1px solid #99a; background: #fff; cursor: pointer; }
+        button:hover { background: #eef; }
+    </style>
+</head>
+<body>
+    <h1>for...of 반복문 따라가기 (배열 [10, 20, 30]의 각 값 ×3 을 더하기)</h1>
+    <div class="row">
+        <div class="card" id="code"></div>
+        <div class="card" id="view">
+            <div class="label">arr (배열) — 노란 칸이 지금 꺼낸 값 v</div>
+            <div id="arr"></div>
+            <div class="label">계산 과정</div>
+            <div id="machine"></div>
+            <div class="label">sum (합계)</div>
+            <div id="sum">0</div>
+            <div id="msg"></div>
+            <div class="label">콘솔 출력</div>
+            <div id="console"></div>
+        </div>
+    </div>
+    <div id="ctrl">
+        <button id="play">▶ 자동 재생</button>
+        <button id="next">다음 단계 ▶|</button>
+        <button id="reset">⟲ 처음부터</button>
+        <span id="count"></span>
+    </div>
+
+    <script>
+        // 원본 코드는 문법 오류 2곳이 있어 고쳐서 보여 준다:
+        //   const f(i) =>i*3     → const f = (i) => i*3
+        //   'v'= ' + v           → 'v = ' + v
+        const CODE = [
+            "const f = (i) => i*3",
+            "let arr = [10,20,30]",
+            "let sum = 0",
+            "for (const v of arr) {",
+            "  console.log('v = ' + v)",
+            "  sum = sum + f(v)",
+            "}",
+            "console.log(sum)"
+        ]
+        const codeEl = document.getElementById("code")
+        CODE.forEach((t, i) => { const d = document.createElement("div"); d.className = "line"; d.id = "l" + i; d.textContent = (i + 1) + "  " + t; codeEl.appendChild(d) })
+
+        // 실제 코드와 똑같이 계산하면서 "단계 목록"을 미리 만든다
+        const f = i => i * 3
+        const arr = [10, 20, 30]
+        let sum = 0
+        const steps = [
+            { line: 0, msg: "함수 f 를 만든다. f(i) 는 받은 값에 3을 곱해서 돌려준다.", idx: -1, calc: "", sum, log: null },
+            { line: 1, msg: "배열 arr 에 10, 20, 30 을 넣는다.", idx: -1, calc: "", sum, log: null },
+            { line: 2, msg: "합계를 담을 변수 sum 을 0 으로 시작한다.", idx: -1, calc: "", sum, log: null }
+        ]
+        arr.forEach((v, n) => {
+            steps.push({ line: 3, msg: `for...of 가 arr 에서 ${n + 1}번째 값을 꺼내 v 에 넣는다. → v = ${v}`, idx: n, calc: `v = ${v}`, sum, log: null })
+            steps.push({ line: 4, msg: `콘솔에 'v = ${v}' 를 출력한다.`, idx: n, calc: `v = ${v}`, sum, log: `v = ${v}` })
+            const old = sum
+            sum = sum + f(v)
+            steps.push({ line: 5, msg: `f(${v}) = ${v}×3 = ${f(v)}. sum = ${old} + ${f(v)} = ${sum}`, idx: n, calc: `f(${v}) = ${v}×3 = ${f(v)}`, sum, log: null, hot: true })
+        })
+        steps.push({ line: 6, msg: "배열의 값을 모두 꺼냈으니 반복이 끝난다.", idx: 3, calc: "", sum, log: null })
+        steps.push({ line: 7, msg: `마지막으로 sum 을 출력한다. 30 + 60 + 90 = ${sum}`, idx: 3, calc: "", sum, log: String(sum) })
+
+        // 화면 그리기
+        const arrEl = document.getElementById("arr"), machine = document.getElementById("machine"), sumEl = document.getElementById("sum")
+        const msgEl = document.getElementById("msg"), consoleEl = document.getElementById("console"), countEl = document.getElementById("count")
+        let cur = -1, timer = null
+
+        function render() {
+            document.querySelectorAll(".line").forEach(e => e.classList.remove("on"))
+            arrEl.innerHTML = ""
+            consoleEl.innerHTML = ""
+            machine.innerHTML = ""
+            if (cur < 0) { sumEl.textContent = "0"; msgEl.textContent = "‘다음 단계’ 또는 ‘자동 재생’을 눌러 보세요."; countEl.textContent = ""
+                arr.forEach(v => arrEl.insertAdjacentHTML("beforeend", `<div class="box">${v}</div>`)); return }
+            const s = steps[cur]
+            document.getElementById("l" + s.line).classList.add("on")
+            arr.forEach((v, n) => arrEl.insertAdjacentHTML("beforeend", `<div class="box ${n === s.idx ? "cur" : n < s.idx ? "done" : ""}">${v}</div>`))
+            if (s.calc) machine.insertAdjacentHTML("beforeend", `<span class="pill ${s.hot ? "pop" : ""}">${s.calc}</span>`)
+            sumEl.textContent = s.sum
+            if (s.hot) { sumEl.classList.add("pop"); setTimeout(() => sumEl.classList.remove("pop"), 350) }
+            msgEl.textContent = s.msg
+            consoleEl.innerHTML = steps.slice(0, cur + 1).filter(x => x.log !== null).map(x => "> " + x.log).join("<br>")
+            countEl.textContent = `${cur + 1} / ${steps.length} 단계`
+        }
+        function next() { if (cur < steps.length - 1) { cur++; render() } else stop() }
+        function stop() { clearInterval(timer); timer = null; document.getElementById("play").textContent = "▶ 자동 재생" }
+        document.getElementById("next").onclick = () => { stop(); next() }
+        document.getElementById("reset").onclick = () => { stop(); cur = -1; render() }
+        document.getElementById("play").onclick = () => {
+            if (timer) { stop(); return }
+            if (cur >= steps.length - 1) cur = -1
+            document.getElementById("play").textContent = "⏸ 일시정지"
+            next(); timer = setInterval(next, 1600)
+        }
+        render()
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제주 관광지 지도</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <style>
+        body { margin: 0; font-family: sans-serif; }
+        #bar { padding: 8px 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        #map { height: calc(100vh - 100px); }
+        #list { padding: 0 12px; height: 40px; overflow: auto; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div id="bar">
+        <select id="area"></select>
+        <select id="indoor">
+            <option value="">실내/야외 전체</option>
+            <option value="true">실내만</option>
+            <option value="false">야외만</option>
+        </select>
+        <button id="go">찾기</button>
+    </div>
+    <div id="list"></div>
+    <div id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="jeju_spots.js"></script>
+    <script>
+        // api/tools.js 의 find_spots 와 같은 규칙 (좌표는 결과에서 빼고, 핀을 찍을 때 이름으로 다시 찾는다)
+        function find_spots({ area, indoor }) {
+            let list = JEJU.spots.filter(s => s.area === area)
+            if (indoor === true || indoor === false) list = list.filter(s => s.indoor === indoor)
+            return { area, count: list.length, spots: list.slice(0, 8).map(s => ({ name: s.name, area: s.area, indoor: s.indoor, desc: s.desc })) }
+        }
+
+        const map = L.map("map").setView([33.38, 126.55], 10)
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map)
+        const pins = L.layerGroup().addTo(map)
+
+        for (const name of Object.keys(JEJU.areas)) {
+            document.getElementById("area").add(new Option(name, name))
+        }
+
+        document.getElementById("go").onclick = () => {
+            const v = document.getElementById("indoor").value
+            const result = find_spots({ area: document.getElementById("area").value, indoor: v === "" ? undefined : v === "true" })
+            pins.clearLayers()
+            const points = []
+            for (const s of result.spots) {
+                const full = JEJU.spots.find(x => x.name === s.name)
+                const p = [full.lat, full.lon]
+                points.push(p)
+                L.marker(p).addTo(pins).bindPopup(`<b>${s.name}</b><br>${s.indoor ? "실내" : "야외"} · ${s.area}<br>${s.desc}`)
+            }
+            document.getElementById("list").textContent = `${result.area} ${result.count}곳 (표시 ${result.spots.length}곳): ` + result.spots.map(s => s.name).join(", ")
+            if (points.length) map.fitBounds(points, { padding: [40, 40] })
+        }
+        document.getElementById("go").click()
+    </script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>제주 귤 뽑기</title>
+  <style>
+    :root {
+      --bg: #e8f6ff;
+      --ink: #3b2a14;
+      --orange: #ff9a1f;
+      --orange-dark: #e07b00;
+      --leaf: #3f9b4b;
+      --leaf-dark: #2f7a3a;
+      --card: #fffdf6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(#bfe6ff, #e8f6ff 60%, #cfeec2 60%, #b7e3a4);
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      overflow-x: hidden;
+    }
+    h1 { margin: 0; font-size: 1.6rem; }
+    .counter {
+      background: #fff;
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    }
+    .counter b { color: var(--orange-dark); font-size: 1.3em; }
+    .stage { position: relative; width: min(92vw, 380px); }
+    #tree { width: 100%; height: auto; cursor: pointer; display: block; -webkit-tap-highlight-color: transparent; }
+    #tree:hover { filter: brightness(1.04); }
+    #tree.shake { animation: shake .35s; transform-origin: 50% 90%; }
+    @keyframes shake {
+      0%,100% { transform: rotate(0); }
+      25% { transform: rotate(-2deg); }
+      75% { transform: rotate(2deg); }
+    }
+    .tangerine { transition: opacity .4s; }
+    .tangerine.fall { animation: fall .9s cubic-bezier(.5,0,1,.6) forwards; }
+    @keyframes fall {
+      to { transform: translateY(var(--drop)); opacity: 0; }
+    }
+    .hint { font-size: .9rem; opacity: .75; margin: 0; }
+    .card {
+      background: var(--card);
+      border: 3px solid var(--orange);
+      border-radius: 16px;
+      padding: 16px 22px;
+      text-align: center;
+      min-width: 260px;
+      max-width: 90vw;
+      min-height: 96px;
+      box-shadow: 0 6px 14px rgba(0,0,0,.18);
+    }
+    .card.pop { animation: pop .4s ease-out; }
+    @keyframes pop {
+      from { transform: scale(.7) translateY(-20px); opacity: 0; }
+      to { transform: none; opacity: 1; }
+    }
+    .jeju { font-size: 1.6rem; font-weight: bold; color: var(--orange-dark); }
+    .mean { margin-top: 6px; font-size: 1.05rem; }
+    .empty { opacity: .6; padding-top: 22px; }
+    .dol { width: 80px; height: auto; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>🍊 제주 귤 뽑기</h1>
+  <div class="counter">뽑은 귤 <b id="count">0</b>개</div>
+
+  <div class="stage">
+    <svg id="tree" viewBox="0 0 300 330" role="button" aria-label="귤나무를 눌러 귤 뽑기">
+      <!-- 줄기 -->
+      <path d="M135 320 L142 215 L158 215 L165 320 Z" fill="#8a5a2b"/>
+      <path d="M150 240 L110 200 M150 235 L195 195" stroke="#8a5a2b" stroke-width="9" stroke-linecap="round"/>
+      <!-- 잎 -->
+      <circle cx="150" cy="115" r="95" fill="var(--leaf)"/>
+      <circle cx="85" cy="150" r="60" fill="var(--leaf)"/>
+      <circle cx="215" cy="150" r="60" fill="var(--leaf)"/>
+      <circle cx="120" cy="80" r="55" fill="#4cae59"/>
+      <circle cx="190" cy="95" r="45" fill="#4cae59"/>
+      <!-- 귤은 스크립트로 추가 -->
+      <g id="fruits"></g>
+    </svg>
+  </div>
+  <p class="hint">나무를 눌러 보세요!</p>
+
+  <div class="card" id="card">
+    <div class="empty">귤이 떨어지면 덕담 카드가 나타나요</div>
+  </div>
+
+  <svg class="dol" viewBox="0 0 120 150" role="img" aria-label="돌하르방">
+    <!-- 돌하르방 -->
+    <path d="M30 150 L34 85 L86 85 L90 150 Z" fill="#8c8c92"/>
+    <path d="M34 100 Q60 112 86 100" stroke="#6e6e74" stroke-width="3" fill="none"/>
+    <ellipse cx="60" cy="52" rx="34" ry="38" fill="#9a9aa0"/>
+    <path d="M22 30 Q60 -8 98 30 L98 38 Q60 12 22 38 Z" fill="#7d7d83"/>
+    <ellipse cx="46" cy="52" rx="6" ry="7" fill="#3a3a3e"/>
+    <ellipse cx="74" cy="52" rx="6" ry="7" fill="#3a3a3e"/>
+    <path d="M56 58 L60 68 L64 58" stroke="#6e6e74" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M48 76 Q60 82 72 76" stroke="#3a3a3e" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M30 95 Q60 80 90 95" stroke="#6e6e74" stroke-width="3" fill="none"/>
+  </svg>
+
+  <script>
+    var BLESSINGS = [
+      { jeju: '혼저 옵서예', mean: '어서 오세요' },
+      { jeju: '폭삭 속았수다', mean: '정말 수고 많으셨어요' },
+      { jeju: '하영 드십서', mean: '많이 드세요' },
+      { jeju: '복 하영 받읍서', mean: '복 많이 받으세요' },
+      { jeju: '펜안히 갑서', mean: '편안히 가세요' },
+      { jeju: '사랑햄수다', mean: '사랑해요' },
+      { jeju: '아프지 맙서', mean: '아프지 마세요' },
+      { jeju: '잘 되쿠다', mean: '잘 될 거예요' }
+    ];
+    var SPOTS = [
+      [95, 105], [150, 70], [205, 100], [65, 160],
+      [125, 140], [180, 150], [235, 165], [150, 190]
+    ];
+    var NS = 'http://www.w3.org/2000/svg';
+    var fruitsG = document.getElementById('fruits');
+    var tree = document.getElementById('tree');
+    var card = document.getElementById('card');
+    var countEl = document.getElementById('count');
+    var count = 0;
+    var lastIdx = -1;
+    var fruits = [];
+
+    function makeFruit(x, y) {
+      var g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'tangerine');
+      g.style.setProperty('--drop', (320 - y) + 'px');
+      var body = document.createElementNS(NS, 'circle');
+      body.setAttribute('cx', x); body.setAttribute('cy', y); body.setAttribute('r', 17);
+      body.setAttribute('fill', 'var(--orange)');
+      body.setAttribute('stroke', 'var(--orange-dark)'); body.setAttribute('stroke-width', 2);
+      var shine = document.createElementNS(NS, 'circle');
+      shine.setAttribute('cx', x - 6); shine.setAttribute('cy', y - 6); shine.setAttribute('r', 4);
+      shine.setAttribute('fill', '#ffd08a');
+      var leaf = document.createElementNS(NS, 'ellipse');
+      leaf.setAttribute('cx', x + 3); leaf.setAttribute('cy', y - 17); leaf.setAttribute('rx', 6);
+      leaf.setAttribute('ry', 3); leaf.setAttribute('fill', 'var(--leaf-dark)');
+      g.appendChild(body); g.appendChild(shine); g.appendChild(leaf);
+      fruitsG.appendChild(g);
+      return g;
+    }
+
+    function growAll() {
+      fruitsG.innerHTML = '';
+      fruits = SPOTS.map(function (p) { return makeFruit(p[0], p[1]); });
+    }
+
+    function showCard() {
+      var i;
+      do { i = Math.floor(Math.random() * BLESSINGS.length); }
+      while (i === lastIdx && BLESSINGS.length > 1);
+      lastIdx = i;
+      var b = BLESSINGS[i];
+      card.innerHTML = '<div class="jeju"></div><div class="mean"></div>';
+      card.firstChild.textContent = b.jeju;
+      card.lastChild.textContent = '(' + b.mean + ')';
+      card.classList.remove('pop');
+      void card.offsetWidth;
+      card.classList.add('pop');
+    }
+
+    tree.addEventListener('click', function () {
+      tree.classList.remove('shake');
+      void tree.offsetWidth;
+      tree.classList.add('shake');
+
+      if (fruits.length === 0) return;
+      var k = Math.floor(Math.random() * fruits.length);
+      var f = fruits.splice(k, 1)[0];
+      f.classList.add('fall');
+      count++;
+      countEl.textContent = count;
+      showCard();
+
+      if (fruits.length === 0) {
+        setTimeout(growAll, 1500);  // 귤이 다 떨어지면 새 귤이 열려요
+      }
+    });
+
+    growAll();
+  </script>
+</body>
+</html>

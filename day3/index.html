@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제주 여행 에이전트</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <style>
+        body { margin: 0; font-family: sans-serif; }
+        #bar { padding: 8px 12px; display: flex; gap: 8px; }
+        #q { flex: 1; font-size: 15px; padding: 6px; }
+        #out { padding: 0 12px; font-size: 14px; line-height: 1.5; max-height: 220px; overflow: auto; }
+        .step { color: #555; }
+        .judge { font-weight: bold; }
+        #map { height: calc(100vh - 330px); min-height: 260px; }
+    </style>
+</head>
+<body>
+    <div id="bar">
+        <input id="q" value="내일 서귀포 쪽 가볼 만한 곳 추천해줘">
+        <button id="go">추천받기</button>
+    </div>
+    <div id="out">질문하면 에이전트가 관광지 찾기와 날씨 보기 도구를 스스로 골라 씁니다.</div>
+    <div id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        const map = L.map("map").setView([33.38, 126.55], 10)
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "&copy; OpenStreetMap contributors" }).addTo(map)
+        const pins = L.layerGroup().addTo(map)
+        const out = document.getElementById("out")
+        const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]))
+
+        document.getElementById("go").onclick = async () => {
+            out.textContent = "생각 중…"
+            pins.clearLayers()
+            try {
+                const r = await fetch("/api/agent", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ question: document.getElementById("q").value })
+                })
+                const d = await r.json()
+                if (d.error) { out.textContent = d.error; return }
+                let html = (d.steps || []).map(s => `<div class="${s.kind === "judge" ? "judge" : "step"}">▸ ${esc(s.text)}</div>`).join("")
+                if (d.text) html += `<p>${esc(d.text)}</p>`
+                const points = []
+                for (const p of d.places || []) {
+                    html += `<div>📍 <b>${esc(p.name)}</b>${p.inList ? "" : " ⚠ 목록에 없음"} — ${esc(p.why)}</div>`
+                    if (p.lat) {
+                        points.push([p.lat, p.lon])
+                        L.marker([p.lat, p.lon]).addTo(pins).bindPopup(`<b>${esc(p.name)}</b><br>${p.indoor ? "실내" : "야외"}<br>${esc(p.why)}`)
+                    }
+                }
+                if (d.tip) html += `<div class="step">💡 ${esc(d.tip)}</div>`
+                out.innerHTML = html
+                if (points.length) map.fitBounds(points, { padding: [40, 40] })
+            } catch (e) {
+                out.textContent = "서버(/api/agent)에 연결하지 못했어요. Vercel에 배포된 주소에서 열어 주세요."
+            }
+        }
+    </script>
+</body>
+</html>

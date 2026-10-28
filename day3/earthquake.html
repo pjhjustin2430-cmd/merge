@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 지진 지구본</title>
+    <style>
+        body { margin: 0; background: #000; color: #eee; font-family: sans-serif; overflow: hidden; }
+        #globe { width: 100vw; height: 100vh; }
+        #panel { position: fixed; left: 12px; top: 12px; right: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+                 background: rgba(0,0,0,.6); padding: 8px 12px; border-radius: 8px; font-size: 14px; }
+        #panel button, #panel select { font-size: 14px; }
+        #clock { min-width: 150px; }
+        #slider { flex: 1; min-width: 120px; }
+        #info { position: fixed; left: 12px; bottom: 12px; background: rgba(0,0,0,.6); padding: 6px 10px; border-radius: 8px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div id="globe"></div>
+    <div id="panel">
+        <b>지진 지구본</b>
+        <button id="play">▶ 최근 24시간 재생</button>
+        <button id="live">지금 보기</button>
+        <input id="slider" type="range" min="0" max="1000" value="1000">
+        <span id="clock"></span>
+        <span id="count"></span>
+    </div>
+    <div id="info">데이터: USGS 지진 피드 (키 없음) · 원 크기·색 = 규모 · 1분마다 갱신</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.33.1/dist/globe.gl.min.js"></script>
+    <script>
+        const FEED = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson"
+        let quakes = []                      // 시간순으로 정렬된 지진 목록
+        let start = 0, end = 0               // 재생 구간(ms)
+        let cursor = 0                       // 지금 보고 있는 시각(ms)
+        let playing = false
+
+        const color = m => m >= 6 ? "#ff2d2d" : m >= 4.5 ? "#ff8c1a" : m >= 3 ? "#ffd21a" : "#4dd2ff"
+
+        const globe = Globe()(document.getElementById("globe"))
+            .globeImageUrl("https://unpkg.com/three-globe@2.31.0/example/img/earth-night.jpg")
+            .backgroundColor("#000")
+            .pointLat(d => d.lat).pointLng(d => d.lng)
+            .pointAltitude(d => d.mag * 0.012)
+            .pointRadius(d => 0.15 + d.mag * 0.12)
+            .pointColor(d => color(d.mag))
+            .pointLabel(d => `<b>M${d.mag.toFixed(1)}</b> ${d.place}<br>${new Date(d.time).toLocaleString("ko-KR")}`)
+            .ringLat(d => d.lat).ringLng(d => d.lng)
+            .ringMaxRadius(d => 2 + d.mag * 1.5)         // 규모가 클수록 크게 번짐
+            .ringPropagationSpeed(2)
+            .ringRepeatPeriod(1200)
+            .ringColor(d => t => color(d.mag) + Math.round((1 - t) * 255).toString(16).padStart(2, "0"))
+        globe.controls().autoRotate = true
+        globe.controls().autoRotateSpeed = 0.4
+
+        async function load() {
+            try {
+                const j = await (await fetch(FEED)).json()
+                quakes = j.features
+                    .filter(f => f.properties.mag != null)
+                    .map(f => ({ lng: f.geometry.coordinates[0], lat: f.geometry.coordinates[1], mag: Math.max(f.properties.mag, 0.1), place: f.properties.place, time: f.properties.time }))
+                    .sort((a, b) => a.time - b.time)
+                end = j.metadata.generated
+                start = end - 24 * 3600 * 1000
+                if (!playing) cursor = end
+                draw()
+            } catch (e) {
+                document.getElementById("count").textContent = "데이터를 불러오지 못했어요"
+            }
+        }
+
+        function draw() {
+            const shown = quakes.filter(q => q.time <= cursor)
+            globe.pointsData(shown)
+            // 파동은 방금(1.5시간 이내) 일어난 지진에만 — 재생 중에는 지나가는 순간에 번짐
+            globe.ringsData(shown.filter(q => cursor - q.time < 90 * 60 * 1000))
+            document.getElementById("clock").textContent = new Date(cursor).toLocaleString("ko-KR")
+            document.getElementById("count").textContent = `${shown.length}건`
+            document.getElementById("slider").value = Math.round((cursor - start) / (end - start) * 1000)
+        }
+
+        function tick() {
+            if (playing) {
+                cursor += (end - start) / (30 * 60)       // 24시간을 약 30초에 재생 (60fps 기준)
+                if (cursor >= end) { cursor = end; playing = false; document.getElementById("play").textContent = "▶ 최근 24시간 재생" }
+                draw()
+            }
+            requestAnimationFrame(tick)
+        }
+
+        document.getElementById("play").onclick = () => {
+            if (!playing && cursor >= end) cursor = start
+            playing = !playing
+            document.getElementById("play").textContent = playing ? "⏸ 일시정지" : "▶ 최근 24시간 재생"
+        }
+        document.getElementById("live").onclick = () => { playing = false; cursor = end; document.getElementById("play").textContent = "▶ 최근 24시간 재생"; draw() }
+        document.getElementById("slider").oninput = e => { playing = false; cursor = start + (end - start) * e.target.value / 1000; draw() }
+
+        load()
+        setInterval(load, 60000)
+        tick()
+    </script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>화면 부품 지도</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 2rem 1rem;
+      background: #f1f5f9;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    h1 { font-size: 1.2rem; margin: 0; }
+    .row { display: flex; align-items: center; gap: 0.75rem; }
+    .tag {
+      font-size: 0.8rem;
+      background: #dc2626;
+      color: #fff;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .tag::before { content: "◀ "; }
+    .tag.none { background: #94a3b8; }
+    .wrap { display: flex; flex-direction: column; gap: 0.5rem; }
+    .outline { outline: 2px dashed #dc2626; outline-offset: -2px; }
+
+    /* index.html 과 같은 카드 스타일 (축약) */
+    .card {
+      width: 380px;
+      max-width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+    }
+    .card-header { background: #2563eb; color: #fff; padding: 1.25rem 1.5rem; }
+    .card-header h1 { font-size: 1.3rem; }
+    .card-header p { margin: 0.25rem 0 0; font-size: 0.85rem; opacity: 0.85; }
+    .card-nav { display: flex; border-bottom: 1px solid #e2e8f0; }
+    .card-nav a {
+      flex: 1; text-align: center; padding: 0.75rem 0;
+      color: #475569; font-size: 0.9rem;
+    }
+    .card-nav a.active { color: #2563eb; border-bottom: 2px solid #2563eb; font-weight: bold; }
+    .card-body { padding: 1.25rem 1.5rem; }
+    .card-body h2 { font-size: 1.05rem; color: #2563eb; margin: 0 0 0.5rem; }
+    .card-body p { margin: 0.35rem 0; font-size: 0.9rem; line-height: 1.5; color: #334155; }
+    .card-body .more { color: #94a3b8; font-size: 0.8rem; }
+    .card-footer {
+      background: #f8fafc; border-top: 1px solid #e2e8f0;
+      padding: 0.75rem 1.5rem; text-align: center; font-size: 0.8rem; color: #64748b;
+    }
+
+    table { border-collapse: collapse; font-size: 0.9rem; background: #fff; }
+    td, th { border: 1px solid #cbd5e1; padding: 0.35rem 0.9rem; text-align: left; }
+    .no { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <h1>🔍 index.html 화면 부품 지도</h1>
+
+  <div class="wrap">
+    <div class="row">
+      <div class="card outline">
+        <span class="tag" style="display:none"></span>
+        <div class="outline" style="border-radius:16px;">
+          <div class="card-header outline">
+            <h1>내 취향 카드</h1>
+            <p>제주대학교 홍보 문구</p>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        <span class="tag">카드 (.card) · 전체 틀</span>
+        <span class="tag">헤더 (&lt;header&gt;)</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <nav class="card outline card-nav" style="border-radius:0">
+        <a href="#" class="active">홈</a>
+        <a href="#">취향</a>
+        <a href="#">소개</a>
+      </nav>
+      <span class="tag">탭 (&lt;nav&gt; 홈·취향·소개)</span>
+    </div>
+
+    <div class="row">
+      <div class="card outline card-body" style="border-radius:0">
+        <h2>🌋 제주대학교를 소개합니다</h2>
+        <p>제주대학교는 대한민국 최남단 제주도를 대표하는 국립 종합대학입니다.</p>
+        <p>아름다운 자연 속에서 꿈을 키우는 배움의 터전입니다.</p>
+        <p class="more">… (총 100줄, 10개 주제)</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        <span class="tag">바디 (&lt;main&gt;)</span>
+        <span class="tag none">목록 아님 — &lt;p&gt; 문단 나열</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <footer class="card outline card-footer" style="border-radius:0">© 2026 내 취향 카드</footer>
+      <span class="tag">푸터 (&lt;footer&gt;)</span>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>이름표</th><th>index.html 에 있나?</th></tr>
+    <tr><td>헤더</td><td>있음</td></tr>
+    <tr><td>카드</td><td>있음 (전체 틀)</td></tr>
+    <tr><td>버튼</td><td class="no">없음</td></tr>
+    <tr><td>입력창</td><td class="no">없음</td></tr>
+    <tr><td>탭</td><td>있음 (상단 메뉴 3개)</td></tr>
+    <tr><td>목록</td><td class="no">없음 (&lt;ul&gt;/&lt;li&gt; 대신 &lt;p&gt; 문단)</td></tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        const  plus=(a,b)=>      a+b
+        
+
+        function minus(a,b){
+            return a - b
+        }
+
+         function mul(a,b){
+            return a*b
+        }
+
+        function div(a,b){
+            return a/b
+        }
+
+        function div(a,b){
+            return a%b
+        }
+        // head 안에서는 body가 아직 없으므로, 문서가 다 읽힌 뒤에 버튼에 이벤트를 연결한다.
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelector('button#plus').addEventListener('click', function () {
+                console.log(plus(4, 6));
+            });
+
+            document.querySelector('button#minus').addEventListener('click', function () {
+                console.log(minus(4, 6));
+            });
+
+             document.querySelector('button#mul').addEventListener('click', function () {
+                console.log(mul(4, 6));
+            });
+
+             document.querySelector('button#div').addEventListener('click', function () {
+                console.log(div(4, 6));
+            }); 
+             document.querySelector('button#mod').addEventListener('click', function () {
+                console.log(mod(4, 6));
+            });
+        });
+    </script>
+</head>
+<body>
+    안녕하세요
+    <h1>
+        반갑습니다
+    </h1>
+    <h2>
+        반갑습니다
+    </h2>
+    <button  id="plus"  >덧셈</button>
+    <button id="minus">뺄셈</button>
+    <button  id="mul"  >곱셈</button>
+    <button id="div">나눗셈</button>
+    <button id="mod">나머지</button>
+</body>
+</html>
